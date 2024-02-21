@@ -16,13 +16,15 @@ data_stand_numeric <- scale(numeric_cols) # standardization
 df_standard <- cbind(data[, c(1,2), drop = FALSE], data_stand_numeric) #combining the original df first column with the new numerical stardardized
 
 
-# filter by restaurant
-df_standard <- df_standard[df_standard$restaurant == "Mcdonalds",]
 
+item_restaurant_dendogram <- function(restaurant) {
+# filter by restaurant
+df_standard <- df_standard[df_standard$restaurant == restaurant,]
 
 
 df_standard <- df_standard[!duplicated(df_standard), ] # delete duplicates
-row_names <- paste(df_standard$restaurant, df_standard$item, sep = "--") # set row names
+# row_names <- paste(df_standard$restaurant, df_standard$item, sep = "--") # set row names
+row_names <- df_standard$item # set row names
 rownames(df_standard) <- row_names
 
 
@@ -32,6 +34,13 @@ gower_dist <- daisy(df_standard_num, metric = "gower")
 
 
 groups<-hclust(gower_dist) #clustering
-plot(groups) # plot
+png(paste("dendogram_", restaurant, ".png"), width = 1920, height = 1080)
+plot(groups, main = paste(restaurant, "'s Items Dendogram")) # plot
+  
+dev.off()
 
 # NEXT TIME TRY TO MAKE THE PLOT FANCIER AND TO CLUSTER THE RESTAURANT
+}
+
+item_restaurant_dendogram("Mcdonalds")
+item_restaurant_dendogram("Burger King")
