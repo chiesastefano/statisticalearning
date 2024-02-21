@@ -73,4 +73,4 @@ restaurant_dendrogram <- function(aggre) {
   dev.off()
 }
 
-restaurant_dendrogram(mean)
+restaurant_dendrogram(mean) #which is the best one?
