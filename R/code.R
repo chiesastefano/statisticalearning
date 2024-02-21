@@ -1,4 +1,5 @@
 #install.packages("cluster")
+#install.packages("reshape2")
 library(cluster)
 
 
@@ -16,21 +17,20 @@ data_stand_numeric <- scale(numeric_cols) # standardization
 df_standard <- cbind(data[, c(1,2), drop = FALSE], data_stand_numeric) #combining the original df first column with the new numerical stardardized
 
 
-
 item_restaurant_dendogram <- function(restaurant) {
 # filter by restaurant
-df_standard <- df_standard[df_standard$restaurant == restaurant,]
+  data_for_clustering <- df_standard[df_standard$restaurant == restaurant,]
 
 
-df_standard <- df_standard[!duplicated(df_standard), ] # delete duplicates
-# row_names <- paste(df_standard$restaurant, df_standard$item, sep = "--") # set row names
-row_names <- df_standard$item # set row names
-rownames(df_standard) <- row_names
+  data_for_clustering <- data_for_clustering[!duplicated(data_for_clustering), ] # delete duplicates
+# row_names <- paste(data_for_clustering$restaurant, data_for_clustering$item, sep = "--") # set row names
+row_names <- data_for_clustering$item # set row names
+rownames(data_for_clustering) <- row_names
 
 
 # using Gower distance because I have some null value
-df_standard_num <- df_standard[,-c(1,2)] #excluding the first two columns because they're not significant in our analysys
-gower_dist <- daisy(df_standard_num, metric = "gower")
+data_for_clustering_num <- data_for_clustering[,-c(1,2)] #excluding the first two columns because they're not significant in our analysys
+gower_dist <- daisy(data_for_clustering_num, metric = "gower")
 
 
 groups<-hclust(gower_dist) #clustering
@@ -39,8 +39,38 @@ plot(groups, main = paste(restaurant, "'s Items Dendogram")) # plot
   
 dev.off()
 
-# NEXT TIME TRY TO MAKE THE PLOT FANCIER AND TO CLUSTER THE RESTAURANT
+#TRY TO MAKE THE PLOT FANCIER AND TO CLUSTER THE RESTAURANT
 }
 
 item_restaurant_dendogram("Mcdonalds")
 item_restaurant_dendogram("Burger King")
+
+
+
+
+
+
+
+
+
+restaurant_dendrogram <- function(aggre) {
+  # aggregate the nutritional information by restaurant
+  agg_data <- aggregate(df_standard[, -c(1, 2)], by = list(df_standard$restaurant), FUN = aggre)
+  
+  # extract numerical columns for clustering
+  data_for_clustering <- agg_data[, -1]
+  
+  # calculate the similarity matrix
+  gower_dist <- daisy(data_for_clustering, metric = "gower")
+  
+  # perform hierarchical clustering
+  hclust_result <- hclust(gower_dist, method = "complete")
+  
+  # plot the dendrogram with restaurant labels
+  png(paste("restaurant_dendogram_", as.character(substitute(aggre)), ".png"), height = 480, width = 600)
+  plot(hclust_result, main = paste("Dendrogram of Restaurants based on Nutritional Similarity (", as.character(substitute(aggre)), ")"), xlab = "Restaurants", sub = "", ylab = "Distance",
+       labels = agg_data$Group.1)  # Use restaurant names as labels
+  dev.off()
+}
+
+restaurant_dendrogram(mean)
