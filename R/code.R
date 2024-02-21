@@ -56,21 +56,22 @@ item_restaurant_dendogram("Burger King")
 restaurant_dendrogram <- function(aggre) {
   # aggregate the nutritional information by restaurant
   agg_data <- aggregate(df_standard[, -c(1, 2)], by = list(df_standard$restaurant), FUN = aggre)
-  
   # extract numerical columns for clustering
   data_for_clustering <- agg_data[, -1]
+
   
   # calculate the similarity matrix
   gower_dist <- daisy(data_for_clustering, metric = "gower")
-  
   # perform hierarchical clustering
   hclust_result <- hclust(gower_dist, method = "complete")
   
   # plot the dendrogram with restaurant labels
   png(paste("restaurant_dendogram_", as.character(substitute(aggre)), ".png"), height = 480, width = 600)
-  plot(hclust_result, main = paste("Dendrogram of Restaurants based on Nutritional Similarity (", as.character(substitute(aggre)), ")"), xlab = "Restaurants", sub = "", ylab = "Distance",
-       labels = agg_data$Group.1)  # Use restaurant names as labels
+  plot(hclust_result, main = paste("Dendrogram of Restaurants based on Nutritional Similarity (", as.character(substitute(aggre)), ")"), xlab = "Restaurants", sub = "", ylab = "Distance", labels = agg_data$Group.1)  # Use restaurant names as labels
   dev.off()
+  print(agg_data)
+  print(data_for_clustering)
 }
 
 restaurant_dendrogram(mean) #which is the best one?
+restaurant_dendrogram(median) #which is the best one?
